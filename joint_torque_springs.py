@@ -50,6 +50,9 @@ from baxter_examples.cfg import (
 )
 from baxter_interface import CHECK_VERSION
 
+from math import pi
+import csv
+
 
 class JointSprings(object):
     """
@@ -68,6 +71,8 @@ class JointSprings(object):
         # control parameters
         self._rate = 1000.0  # Hz
         self._missed_cmds = 20.0  # Missed cycles before triggering timeout
+        self._change_pose_cnt = 0
+        self.data = []
 
         # create our limb instance
         self._limb = baxter_interface.Limb(limb)
@@ -122,6 +127,18 @@ class JointSprings(object):
         and the current joint positions applying the joint torque spring forces
         as defined on the dynamic reconfigure server.
         """
+        self._change_pose_cnt += 1
+        if self._change_pose_cnt >= 10000:
+            self._change_pose_cnt = 0
+            self._start_angles['left_s0'] = -self._start_angles['left_s0']
+
+            myFile = open('position.csv', 'w')
+            with myFile:
+                writer = csv.writer(myFile)
+                writer.writerows(self.data)
+            print(self.data)
+            self.data = []
+
         # get latest spring constants
         self._update_parameters()
 
@@ -133,11 +150,12 @@ class JointSprings(object):
         # record current angles/velocities
         cur_pos = self._limb.joint_angles()
         cur_vel = self._limb.joint_velocities()
+        self.data.append([self._start_angles['left_s0'], cur_pos['left_s0'], cur_vel['left_s0']])
         # calculate current forces
         for joint in self._start_angles.keys():
             # spring portion
             position_error = cur_pos[joint] - self._start_angles[joint]
-            print("{}'s error: {}\n".format(joint, position_error))
+            #print("{}'s error: {}\n".format(joint, position_error))
             cmd[joint] = -self._springs[joint] * position_error
             # damping portion
             cmd[joint] -= self._damping[joint] * cur_vel[joint]
@@ -161,6 +179,7 @@ class JointSprings(object):
         """
         # record initial joint angles
         self._start_angles = self._limb.joint_angles()
+        self._start_angles['left_s0'] = pi/9
 
         # set control rate
         control_rate = rospy.Rate(self._rate)
