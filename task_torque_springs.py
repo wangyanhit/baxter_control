@@ -46,10 +46,15 @@ from baxter_core_msgs.msg import  (
 import baxter_interface
 
 from baxter_examples.cfg import (
-    JointSpringsExampleConfig,
+    TaskSpringsExampleConfig,
 )
 from baxter_interface import CHECK_VERSION
 
+from baxter_pykdl import baxter_kinematics
+
+from time import time
+
+import numpy as np
 
 class JointSprings(object):
     """
@@ -68,15 +73,21 @@ class JointSprings(object):
         # control parameters
         self._rate = 1000.0  # Hz
         self._missed_cmds = 20.0  # Missed cycles before triggering timeout
-
+        self.joint_names = ['left_s0', 'left_s1', 'left_e0', 'left_e1', 'left_w0', 'left_w1', 'left_w2']
+        # define start and end time to calcualte velocity
+        self._end = time()
+        self._start = time()
         # create our limb instance
         self._limb = baxter_interface.Limb(limb)
-
+        self._start_angles = dict()
+        # self._dof_names = {'x': 1, 'y': 2, 'z': 3}
+        self._dof_names = ['x', 'y', 'z']
         # initialize parameters
         self._springs = dict()
         self._damping = dict()
-        self._start_angles = dict()
-
+        self._start_pos = [0, 0, 0]
+        self._last_pos = self._start_pos
+        self._kin = baxter_kinematics('left')
         # gravity compensation
         self._gravity_comp_effort = dict()
         self._gravity_comp_effort_ok = False
@@ -110,11 +121,9 @@ class JointSprings(object):
                 self._gravity_comp_effort[name] = msg.gravity_model_effort[idx]
 
     def _update_parameters(self):
-        for joint in self._limb.joint_names():
-            self._springs[joint] = self._dyn.config[joint[-2:] +
-                                                    '_spring_stiffness']
-            self._damping[joint] = self._dyn.config[joint[-2:] +
-                                                    '_damping_coefficient']
+        for dof in self._dof_names:
+            self._springs[dof] = self._dyn.config[dof[-2:] + '_spring_stiffness']
+            self._damping[dof] = self._dyn.config[dof[-2:] + '_damping_coefficient']
 
     def _update_forces(self):
         """
@@ -131,21 +140,32 @@ class JointSprings(object):
         # create our command dict
         cmd = dict()
         # record current angles/velocities
-        cur_pos = self._limb.joint_angles()
-        cur_vel = self._limb.joint_velocities()
+        cur_pos = self._kin.forward_position_kinematics()[0:3]
+        self._end = time()
+        cur_vel = (cur_pos - self._last_pos)/(self._start - self._end)
+        self._start = time()
+        self._last_pos = cur_pos
+        J_trans = self._kin.jacobian_transpose()
         # calculate current forces
-        for joint in self._start_angles.keys():
+        f_cmd = np.matrix([[0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
+        for i in range(0, 3):
             # spring portion
-            position_error = cur_pos[joint] - self._start_angles[joint]
-            print("{}'s error: {}\n".format(joint, position_error))
-            cmd[joint] = -self._springs[joint] * position_error
+            position_error = cur_pos[i] - self._start_pos[i]
+            # print("{}'s error: {}\n".format(self._dof_names[i], position_error))
+            f_cmd[i, 0] = -self._springs[self._dof_names[i]] * position_error
             # damping portion
-            cmd[joint] -= self._damping[joint] * cur_vel[joint]
-            # gravity compensation portion
+            f_cmd[i, 0] -= self._damping[self._dof_names[i]] * cur_vel[i]
+        torque_cmd = np.matmul(J_trans, f_cmd)
+        # gravity compensation portion
+        for joint in self._start_angles.keys():
+            cmd[joint] = 0
             if self._gravity_comp_effort_ok and joint in self._gravity_comp_effort.keys():
-                cmd[joint] += self._gravity_comp_effort[joint] * 0.01
+                cmd[joint] = self._gravity_comp_effort[joint] * 0.01
         # command new joint torques
-        #print(self._gravity_comp_effort)
+        for idx, name in enumerate(self.joint_names):
+            cmd[name] += torque_cmd[idx, 0]
+            print(torque_cmd[idx, 0])
+        # print(self._gravity_comp_effort)
         self._limb.set_joint_torques(cmd)
 
     def move_to_neutral(self):
@@ -161,7 +181,9 @@ class JointSprings(object):
         """
         # record initial joint angles
         self._start_angles = self._limb.joint_angles()
-
+        self._start_pos = self._kin.forward_position_kinematics()[0:3]
+        self._last_pos = self._start_pos
+        self._start = time()
         # set control rate
         control_rate = rospy.Rate(self._rate)
 
@@ -173,7 +195,7 @@ class JointSprings(object):
         # loop at specified rate commanding new joint torques
         while not rospy.is_shutdown():
             if not self._rs.state().enabled:
-                rospy.logerr("Joint torque example failed to meet "
+                rospy.logerr("Task torque example failed to meet "
                              "specified control rate timeout.")
                 break
             self._update_forces()
@@ -213,8 +235,8 @@ def main():
     args = parser.parse_args(rospy.myargv()[1:])
 
     print("Initializing node... ")
-    rospy.init_node("rsdk_joint_torque_springs_%s" % (args.limb,))
-    dynamic_cfg_srv = Server(JointSpringsExampleConfig,
+    rospy.init_node("rsdk_task_torque_springs_%s" % (args.limb,))
+    dynamic_cfg_srv = Server(TaskSpringsExampleConfig,
                              lambda config, level: config)
     js = JointSprings(args.limb, dynamic_cfg_srv)
     # register shutdown callback
