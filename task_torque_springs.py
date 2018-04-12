@@ -27,7 +27,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """
-Baxter RSDK Joint Torque Example: joint springs
+Modified Baxter RSDK Joint Torque Example: task springs
 """
 
 import argparse
@@ -213,7 +213,7 @@ class JointSprings(object):
 
 
 def main():
-    """RSDK Joint Torque Example: Joint Springs
+    """Modified RSDK Joint Torque Example: Task Springs
 
     Moves the specified limb to a neutral location and enters
     torque control mode, attaching virtual springs (Hooke's Law)
