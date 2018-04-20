@@ -56,6 +56,10 @@ from time import time
 
 import numpy as np
 
+from copy import deepcopy
+
+import csv
+
 class JointSprings(object):
     """
     Virtual Joint Springs class for torque example.
@@ -110,6 +114,7 @@ class JointSprings(object):
         print("Enabling robot... ")
         self._rs.enable()
         print("Running. Ctrl-c to quit")
+        self.safe_file = open('mani.csv', 'w')
 
     def _on_gravity_comp(self, msg):
         #print('gravity compensation effort received!')
@@ -146,6 +151,35 @@ class JointSprings(object):
         self._start = time()
         self._last_pos = cur_pos
         J_trans = self._kin.jacobian_transpose()
+        # calculate manipulability
+        angles = self._limb.joint_angles()
+        # angles_raw = self._limb.joint_angles()
+        # angles = [0, 0, 0, 0, 0, 0, 0]
+        # for idx, name in enumerate(self.joint_names):
+        #     angles[idx] = angles_raw[name]
+        J = self._kin.jacobian()
+        M = np.sqrt(np.linalg.det(np.matmul(J, J_trans)))
+        print "M is: "
+        print M
+        Mq = [0, 0, 0, 0, 0, 0, 0]
+        delta_q = 0.1
+        for idx, name in enumerate(self.joint_names):
+            angles_temp = deepcopy(angles)
+            angles_temp[name] = angles[name] + delta_q
+            J_hat = self._kin.jacobian(angles_temp)
+            J_trans_hat = self._kin.jacobian_transpose(angles_temp)
+            M_temp = np.sqrt(np.linalg.det(np.matmul(J_hat, J_trans_hat)))
+            Mq[idx] = (M_temp - M) / (delta_q)
+        M_limit = 0.07
+        # M_limit = 1
+        tau_singularity = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        lamda = 5
+        if M < M_limit:
+            k = 1/(M + 0.000001) - 1/(M_limit + 0.00001)
+            for i in range(7):
+                tau_singularity[i] = lamda * Mq[i] * k
+        # print("tau_singularity is: ")
+        # print(tau_singularity)
         # calculate current forces
         f_cmd = np.matrix([[0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
         for i in range(0, 3):
@@ -163,10 +197,19 @@ class JointSprings(object):
                 cmd[joint] = self._gravity_comp_effort[joint] * 0.01
         # command new joint torques
         for idx, name in enumerate(self.joint_names):
+            # cmd[name] += torque_cmd[idx, 0] + tau_singularity[idx]
             cmd[name] += torque_cmd[idx, 0]
-            print(torque_cmd[idx, 0])
+            # print(torque_cmd[idx, 0])
         # print(self._gravity_comp_effort)
+        # print(cmd)
         self._limb.set_joint_torques(cmd)
+        # save file
+        save = [M, tau_singularity[0], tau_singularity[1], tau_singularity[2], tau_singularity[3], tau_singularity[4],
+                tau_singularity[5], tau_singularity[6]]
+        self.safe_file = open('mani.csv', 'a')
+        with self.safe_file:
+            writer = csv.writer(self.safe_file)
+            writer.writerow(list(save))
 
     def move_to_neutral(self):
         """

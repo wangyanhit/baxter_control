@@ -16,10 +16,10 @@
       <file leaf-file-name="task_torque_springs.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/task_torque_springs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="215" column="16" selection-start-line="215" selection-start-column="16" selection-end-line="215" selection-end-column="16" />
+            <state relative-caret-position="222">
+              <caret line="200" column="43" selection-start-line="200" selection-start-column="43" selection-end-line="200" selection-end-column="43" />
               <folding>
-                <element signature="e#1633#1648#0" expanded="true" />
+                <element signature="e#1641#1656#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -28,8 +28,8 @@
       <file leaf-file-name="joint_torque_springs.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/joint_torque_springs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="199" lean-forward="true" selection-start-line="199" selection-end-line="199" />
+            <state relative-caret-position="410">
+              <caret line="139" column="26" selection-start-line="139" selection-start-column="26" selection-end-line="139" selection-end-column="26" />
               <folding>
                 <element signature="e#1633#1648#0" expanded="true" />
               </folding>
@@ -42,6 +42,7 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>_on_gravity_comp</find>
+      <find>print</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -66,7 +67,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -78,6 +78,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -198,16 +199,36 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="7" />
+      <option name="time" value="12" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/task_torque_springs.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3870">
+          <caret line="215" column="16" selection-start-line="215" selection-start-column="16" selection-end-line="215" selection-end-column="16" />
+          <folding>
+            <element signature="e#1641#1656#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/joint_torque_springs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3582">
+          <caret line="199" lean-forward="true" selection-start-line="199" selection-end-line="199" />
+          <folding>
+            <element signature="e#1633#1648#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/task_torque_springs.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="864">
           <caret line="48" column="29" lean-forward="true" selection-start-line="48" selection-start-column="29" selection-end-line="48" selection-end-column="29" />
           <folding>
-            <element signature="e#1633#1648#0" expanded="true" />
+            <element signature="e#1641#1656#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -224,8 +245,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/joint_torque_springs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="199" lean-forward="true" selection-start-line="199" selection-end-line="199" />
+        <state relative-caret-position="410">
+          <caret line="139" column="26" selection-start-line="139" selection-start-column="26" selection-end-line="139" selection-end-column="26" />
           <folding>
             <element signature="e#1633#1648#0" expanded="true" />
           </folding>
@@ -234,10 +255,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/task_torque_springs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="215" column="16" selection-start-line="215" selection-start-column="16" selection-end-line="215" selection-end-column="16" />
+        <state relative-caret-position="222">
+          <caret line="200" column="43" selection-start-line="200" selection-start-column="43" selection-end-line="200" selection-end-column="43" />
           <folding>
-            <element signature="e#1633#1648#0" expanded="true" />
+            <element signature="e#1641#1656#0" expanded="true" />
           </folding>
         </state>
       </provider>
