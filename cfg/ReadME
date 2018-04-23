@@ -1,1 +1,2 @@
 copy TaskSpringExample.cfg into ../baxter_examples/cfg, then catkin_make under ros_ws.
+change cmakelist 
